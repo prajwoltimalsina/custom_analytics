@@ -176,10 +176,21 @@ function checkAuthStatus() {
       window.location.href = 'index.html';
     }
   }
+  
+  // Return the user object for convenience
+  return currentUser;
 }
 
 // Check if user exists in Google Sheets database
 function checkUserInDatabase(email, callback) {
+  // Make sure gapi client is initialized and ready
+  if (!gapi.client || !gapi.client.sheets) {
+    console.error("Google API client not initialized");
+    // Fallback - assume user doesn't exist
+    callback(false);
+    return;
+  }
+
   // Use Google Sheets API to check if user exists
   gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
@@ -197,6 +208,12 @@ function checkUserInDatabase(email, callback) {
 
 // Add user to Google Sheets database
 function addUserToDatabase(email, firstName, lastName) {
+  // Make sure gapi client is initialized and ready
+  if (!gapi.client || !gapi.client.sheets) {
+    console.error("Google API client not initialized");
+    return;
+  }
+
   // Use Google Sheets API to add user
   gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
@@ -215,6 +232,30 @@ function addUserToDatabase(email, firstName, lastName) {
 
 // Function to fetch Google Sheets data
 function fetchCampaignData(callback) {
+  // Make sure gapi client is initialized and ready
+  if (!gapi.client || !gapi.client.sheets) {
+    console.error("Google API client not initialized");
+    const fallbackUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vShkyha9RUILD6tgutsA9KqriklzAITyydxblmfyYvRvC7lLS60JMsVM3am-8wwu5Kt5a9mHSDvoQgO/pub?output=csv";
+    
+    // Use Papa Parse as fallback
+    if (typeof Papa !== 'undefined') {
+      Papa.parse(fallbackUrl, {
+        download: true,
+        header: false,
+        complete: function(results) {
+          callback(results.data);
+        },
+        error: function(error) {
+          console.error("Error fetching CSV data:", error);
+          callback(null, error);
+        }
+      });
+    } else {
+      callback(null, new Error("Neither Google API nor Papa Parse is available"));
+    }
+    return;
+  }
+
   gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: 'Campaign!A:B', // Assuming campaign data is in a sheet named 'Campaign'

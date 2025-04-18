@@ -15,10 +15,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <!-- Google API Scripts -->
-    <script src="https://apis.google.com/js/api.js"></script>
+    <script
+      src="https://apis.google.com/js/api.js"
+      onload="gapiLoaded()"
+    ></script>
+    <script
+      src="https://accounts.google.com/gsi/client"
+      onload="gisLoaded()"
+    ></script>
     <script src="auth.js"></script>
   </head>
   <body class="bg-gray-100">
+    <!-- Alert Box for messages -->
+    <div
+      id="alertBox"
+      style="
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 1000;
+      "
+    >
+      <span id="alertMessage"></span>
+    </div>
+
     <div class="flex h-screen">
       <!-- Sidebar -->
       <div class="w-64 bg-blue-800 text-white p-5">
@@ -115,14 +141,38 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Check if user is logged in
-        const user = checkLoggedInStatus();
+        // Check if user is logged in - Fixed function call
+        const user = localStorage.getItem("user")
+          ? JSON.parse(localStorage.getItem("user"))
+          : null;
 
         if (user) {
           document.getElementById("userNameDisplay").textContent =
             user.firstName + " " + user.lastName;
+        } else {
+          // Redirect to login if no user found
+          window.location.href = "index.html";
+          return;
         }
 
+        // Try to fetch campaign data using Google Sheets API first
+        if (typeof gapi !== "undefined" && gapi.client && gapi.client.sheets) {
+          fetchCampaignData(function (data, error) {
+            if (data) {
+              processCampaignData(data);
+            } else {
+              // Fall back to CSV approach if API fails
+              fetchCSVData();
+            }
+          });
+        } else {
+          // Fall back to CSV approach if Google API isn't ready
+          fetchCSVData();
+        }
+      });
+
+      // Function to fetch data directly from published CSV
+      function fetchCSVData() {
         // CSV URL from published Google Sheet
         const csvUrl =
           "https://docs.google.com/spreadsheets/d/e/2PACX-1vShkyha9RUILD6tgutsA9KqriklzAITyydxblmfyYvRvC7lLS60JMsVM3am-8wwu5Kt5a9mHSDvoQgO/pub?output=csv";
@@ -131,88 +181,129 @@
           download: true,
           header: false, // Change to true if your CSV includes header row
           complete: function (results) {
-            const tableBody = document.getElementById("campaignTableBody");
-            const metrics = {};
-            let engagementRate = 0;
-            let followerGrowth = 0;
-            let totalReach = 0;
-            let impressions = 0;
-
-            // Process each row of the CSV
-            results.data.forEach((row, index) => {
-              if (index > 0 && row.length >= 2) {
-                // Skip the header row and ensure the row has at least two columns
-                const item = row[0].trim().toLowerCase(); // Extract and normalize the item name
-                const value = parseFloat(row[1]) || row[1].trim(); // Convert to number if possible, otherwise trim the string
-
-                // Insert rows into the table
-                const newRow = tableBody.insertRow();
-                const cellItem = newRow.insertCell(0);
-                const cellValue = newRow.insertCell(1);
-                cellItem.textContent = item;
-                cellValue.textContent = value;
-
-                // Collect metrics for the chart and separate values for count-up
-                if (item === "engagement rate") {
-                  engagementRate = parseFloat(value) || 0;
-                } else if (item === "follower growth") {
-                  followerGrowth = parseFloat(value) || 0;
-                } else if (item === "total reached" || item === "reach") {
-                  totalReach = parseFloat(value) || 0;
-                } else if (item === "impressions") {
-                  impressions = parseFloat(value) || 0;
-                }
-
-                // Store for chart
-                metrics[item] = parseFloat(value) || 0;
-              }
-            });
-
-            // Update metrics display
-            document.getElementById(
-              "engagementRate"
-            ).textContent = `${engagementRate}%`;
-            document.getElementById("followerGrowth").textContent =
-              followerGrowth;
-            document.getElementById("totalReach").textContent = totalReach;
-            document.getElementById("impressions").textContent = impressions;
-
-            // Draw chart
-            drawChart(metrics);
+            processCampaignData(results.data);
           },
           error: function (error) {
             console.error("Error fetching or parsing the CSV data:", error);
+            showAlert("Error loading campaign data. Please try again later.");
           },
         });
-      });
+      }
+
+      // Process campaign data regardless of source
+      function processCampaignData(data) {
+        const tableBody = document.getElementById("campaignTableBody");
+        const metrics = {};
+        let engagementRate = 0;
+        let followerGrowth = 0;
+        let totalReach = 0;
+        let impressions = 0;
+
+        // Clear existing table data
+        tableBody.innerHTML = "";
+
+        // Process each row of the data
+        if (Array.isArray(data)) {
+          data.forEach((row, index) => {
+            if (index > 0 && row.length >= 2) {
+              // Skip the header row and ensure the row has at least two columns
+              const item = row[0].trim().toLowerCase(); // Extract and normalize the item name
+              const value = parseFloat(row[1]) || row[1].trim(); // Convert to number if possible, otherwise trim the string
+
+              // Insert rows into the table
+              const newRow = tableBody.insertRow();
+              const cellItem = newRow.insertCell(0);
+              const cellValue = newRow.insertCell(1);
+              cellItem.textContent = item;
+              cellValue.textContent = value;
+
+              // Collect metrics for the chart and separate values for count-up
+              if (item === "engagement rate") {
+                engagementRate = parseFloat(value) || 0;
+              } else if (item === "follower growth") {
+                followerGrowth = parseFloat(value) || 0;
+              } else if (item === "total reached" || item === "reach") {
+                totalReach = parseFloat(value) || 0;
+              } else if (item === "impressions") {
+                impressions = parseFloat(value) || 0;
+              }
+
+              // Store for chart
+              if (!isNaN(parseFloat(value))) {
+                metrics[item] = parseFloat(value);
+              }
+            }
+          });
+
+          // Update metrics display
+          document.getElementById(
+            "engagementRate"
+          ).textContent = `${engagementRate}%`;
+          document.getElementById("followerGrowth").textContent =
+            followerGrowth;
+          document.getElementById("totalReach").textContent = totalReach;
+          document.getElementById("impressions").textContent = impressions;
+
+          // Draw chart
+          drawChart(metrics);
+        } else {
+          showAlert("Invalid data format received. Please try again later.");
+        }
+      }
 
       // Function to draw a chart using Chart.js
       function drawChart(metrics) {
         const ctx = document.getElementById("metricsChart").getContext("2d");
-        new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: Object.keys(metrics),
-            datasets: [
-              {
-                label: "Campaign Metrics",
-                data: Object.values(metrics),
-                backgroundColor: "rgba(54, 162, 235, 0.6)",
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-              y: {
-                beginAtZero: true,
+
+        // Only draw chart if we have data
+        if (Object.keys(metrics).length > 0) {
+          new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: Object.keys(metrics),
+              datasets: [
+                {
+                  label: "Campaign Metrics",
+                  data: Object.values(metrics),
+                  backgroundColor: "rgba(54, 162, 235, 0.6)",
+                  borderColor: "rgba(54, 162, 235, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                },
               },
             },
-          },
-        });
+          });
+        } else {
+          // Show message if no data
+          ctx.font = "16px Arial";
+          ctx.fillText("No metric data available", 10, 50);
+        }
+      }
+
+      // Helper function to display alerts
+      function showAlert(message) {
+        const alertBox = document.getElementById("alertBox");
+        const alertMessage = document.getElementById("alertMessage");
+
+        if (alertBox && alertMessage) {
+          alertMessage.innerText = message;
+          alertBox.style.display = "block";
+
+          setTimeout(() => {
+            alertBox.style.display = "none";
+          }, 5000);
+        } else {
+          // Fallback if alert elements don't exist
+          alert(message);
+        }
       }
     </script>
   </body>

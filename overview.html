@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Overview</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google API Scripts -->
+    <script
+      src="https://apis.google.com/js/api.js"
+      onload="gapiLoaded()"
+    ></script>
+    <script
+      src="https://accounts.google.com/gsi/client"
+      onload="gisLoaded()"
+    ></script>
+    <script src="auth.js"></script>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Alert Box for messages -->
+    <div
+      id="alertBox"
+      style="
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 1000;
+      "
+    >
+      <span id="alertMessage"></span>
+    </div>
+
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <div class="w-64 bg-blue-800 text-white p-5">
+        <h2 class="text-3xl font-bold mb-6">Dashboard</h2>
+
+        <ul>
+          <li>
+            <a href="overview.html" class="block py-2 px-4 hover:bg-blue-700"
+              >Overview</a
+            >
+          </li>
+          <li>
+            <a href="dashboard.html" class="block py-2 px-4 hover:bg-blue-700"
+              >Dashboard</a
+            >
+          </li>
+          <li>
+            <a href="#" class="block py-2 px-4 hover:bg-blue-700">Analytics</a>
+          </li>
+          <li>
+            <a href="#" class="block py-2 px-4 hover:bg-blue-700">Settings</a>
+          </li>
+          <li>
+            <a
+              href="#"
+              id="signOutLink"
+              class="block py-2 px-4 hover:bg-blue-700"
+              >Logout</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 p-6">
+        <h1 class="text-3xl font-semibold text-center mb-8 text-blue-800">
+          Campaign Overview
+        </h1>
+
+        <!-- Overview Content -->
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <h2 class="text-2xl font-semibold mb-4 text-blue-600">
+            Campaign Summary
+          </h2>
+          <p class="mb-4">
+            Welcome to your campaign overview page. This page provides a
+            high-level summary of your social media campaign performance.
+          </p>
+          <p class="mb-4">
+            For detailed analytics and metrics, please visit the
+            <a href="dashboard.html" class="text-blue-500 hover:underline"
+              >Dashboard</a
+            >
+            page.
+          </p>
+        </div>
+
+        <!-- Upcoming Features -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-semibold mb-4 text-blue-600">
+            Upcoming Features
+          </h2>
+          <ul class="list-disc pl-5 space-y-2">
+            <li>Campaign scheduling and automation</li>
+            <li>Content performance analysis</li>
+            <li>Audience demographics insights</li>
+            <li>Competitor analysis tools</li>
+            <li>Custom reporting options</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if user is logged in
+        const user = localStorage.getItem("user")
+          ? JSON.parse(localStorage.getItem("user"))
+          : null;
+
+        if (!user) {
+          // Redirect to login if no user found
+          window.location.href = "index.html";
+        }
+      });
+    </script>
+  </body>
+</html>
