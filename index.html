@@ -97,52 +97,46 @@
     </div>
 
     <div class="container" id="signIn">
-        <h1 class="form-title">Sign In</h1>
-        <form method="post" action="register.php">
-          <div class="input-group">
-            <i class="fas fa-envelope"></i>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              placeholder="Email"
-              required
-            />
-            <label for="email">Email</label>
-          </div>
-  
-          <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Password"
-              required
-            />
-            <label for="password">Password</label>
-          </div>
-  
-          <p class="recover">
-              <a href="#">Recover Password</a>
-            </p>
-           <input type="submit" class="btn" value="Sign In" name="signIn">
-          </form>
-          <p class="or">
-            ----------or--------
-          </p>
-  
-          <div class="icons">
-              <i class="fab fa-google"></i>
-              <i class="fab fa-facebook"></i>
-            </div>
-            <div class="links">
-              <p>Don't have account yet?</p>
-              <button id="signUpButton">Sign Up</button>
-            </div>
-          </div>
-        </form>
+      <h1 class="form-title">Sign In</h1>
+      <form id="signinForm">
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          <input
+            type="email"
+            name="email"
+            id="signinEmail"
+            placeholder="Email"
+            required
+          />
+          <label for="signinEmail">Email</label>
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input
+            type="password"
+            name="password"
+            id="signinPassword"
+            placeholder="Password"
+            required
+          />
+          <label for="signinPassword">Password</label>
+        </div>
+
+        <p class="recover">
+          <a href="#">Recover Password</a>
+        </p>
+        <input type="submit" class="btn" value="Sign In" />
+      </form>
+      <p class="or">----------or--------</p>
+
+      <div id="googleSigninDiv"></div>
+
+      <div class="links">
+        <p>Don't have account yet?</p>
+        <button id="signUpButton">Sign Up</button>
       </div>
+    </div>
 
     <!-- Load auth.js after Google API scripts -->
     <script src="auth.js"></script>

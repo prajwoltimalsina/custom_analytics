@@ -11,29 +11,14 @@
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- PapaParse for CSV parsing (fallback if Google Sheets API fails) -->
+    <!-- PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
-    <!-- Google API Scripts - Load in correct order -->
-    <script
-      src="https://apis.google.com/js/api.js"
-      onload="gapiLoaded()"
-    ></script>
-    <script
-      src="https://accounts.google.com/gsi/client"
-      onload="gisLoaded()"
-    ></script>
+    <!-- Google API Scripts -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="auth.js"></script>
   </head>
   <body class="bg-gray-100">
-    <!-- Alert Box for messages -->
-    <div
-      id="alertBox"
-      style="display: none"
-      class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded z-50"
-    >
-      <span id="alertMessage"></span>
-    </div>
-
     <div class="flex h-screen">
       <!-- Sidebar -->
       <div class="w-64 bg-blue-800 text-white p-5">
@@ -101,7 +86,7 @@
           </div>
         </div>
 
-        <!-- Table for displaying Sheet data -->
+        <!-- Table for displaying CSV data -->
         <div class="overflow-x-auto bg-white p-6 rounded-lg shadow-lg mb-8">
           <table class="min-w-full table-auto">
             <thead>
@@ -130,144 +115,87 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Try to load data via Google Sheets API first (primary method)
-        function loadCampaignData() {
-          if (typeof gapi !== "undefined" && gapi.client) {
-            // Use the fetchCampaignData function from auth.js
-            fetchCampaignData(function (results, error) {
-              if (error) {
-                console.error("Error using Google Sheets API:", error);
-                // Fall back to CSV method as backup
-                loadCampaignDataFromCSV();
-                return;
-              }
+        // Check if user is logged in
+        const user = checkLoggedInStatus();
 
-              if (results && results.length > 0) {
-                processCampaignData(results);
-              } else {
-                showAlert(
-                  "No campaign data found. Please check your Google Sheet."
-                );
-              }
-            });
-          } else {
-            // If Google API isn't loaded yet, use CSV as fallback
-            loadCampaignDataFromCSV();
-          }
-        }
-
-        // Fallback method using published CSV
-        function loadCampaignDataFromCSV() {
-          const csvUrl =
-            "https://docs.google.com/spreadsheets/d/e/2PACX-1vShkyha9RUILD6tgutsA9KqriklzAITyydxblmfyYvRvC7lLS60JMsVM3am-8wwu5Kt5a9mHSDvoQgO/pub?output=csv";
-
-          Papa.parse(csvUrl, {
-            download: true,
-            header: false,
-            complete: function (results) {
-              if (results.data && results.data.length > 0) {
-                processCampaignData(results.data);
-              } else {
-                showAlert(
-                  "Could not load campaign data. Please check your Google Sheet publication settings."
-                );
-              }
-            },
-            error: function (error) {
-              console.error("Error fetching or parsing the CSV data:", error);
-              showAlert(
-                "Could not load campaign data. Please try again later."
-              );
-            },
-          });
-        }
-
-        // Process the campaign data from either source
-        function processCampaignData(data) {
-          const tableBody = document.getElementById("campaignTableBody");
-          tableBody.innerHTML = ""; // Clear existing data
-
-          const metrics = {};
-          let engagementRate = 0;
-          let followerGrowth = 0;
-          let totalReach = 0;
-          let impressions = 0;
-
-          // Process each row of the data
-          data.forEach((row, index) => {
-            if (index > 0 && row.length >= 2) {
-              // Skip header row
-              const item = row[0].trim().toLowerCase();
-              const value = parseFloat(row[1]) || row[1].trim();
-
-              // Insert rows into the table
-              const newRow = tableBody.insertRow();
-              const cellItem = newRow.insertCell(0);
-              const cellValue = newRow.insertCell(1);
-              cellItem.textContent = item;
-              cellValue.textContent = value;
-
-              // Collect metrics for the chart and separate values for count-up
-              if (item === "engagement rate") {
-                engagementRate = parseFloat(value) || 0;
-              } else if (item === "follower growth") {
-                followerGrowth = parseFloat(value) || 0;
-              } else if (item === "total reached" || item === "reach") {
-                totalReach = parseFloat(value) || 0;
-              } else if (item === "impressions") {
-                impressions = parseFloat(value) || 0;
-              }
-
-              // Store for chart
-              metrics[item] = parseFloat(value) || 0;
-            }
-          });
-
-          // Update metrics display
-          document.getElementById(
-            "engagementRate"
-          ).textContent = `${engagementRate}%`;
-          document.getElementById("followerGrowth").textContent =
-            followerGrowth;
-          document.getElementById("totalReach").textContent = totalReach;
-          document.getElementById("impressions").textContent = impressions;
-
-          // Draw chart
-          drawChart(metrics);
-        }
-
-        // Display user information
-        const user = JSON.parse(localStorage.getItem("user"));
         if (user) {
           document.getElementById("userNameDisplay").textContent =
             user.firstName + " " + user.lastName;
         }
 
-        // Load the campaign data
-        // Small delay to ensure Google API is initialized
-        setTimeout(loadCampaignData, 1000);
+        // CSV URL from published Google Sheet
+        const csvUrl = "";
+
+        Papa.parse(csvUrl, {
+          download: true,
+          header: false, // Change to true if your CSV includes header row
+          complete: function (results) {
+            const tableBody = document.getElementById("campaignTableBody");
+            const metrics = {};
+            let engagementRate = 0;
+            let followerGrowth = 0;
+            let totalReach = 0;
+            let impressions = 0;
+
+            // Process each row of the CSV
+            results.data.forEach((row, index) => {
+              if (index > 0 && row.length >= 2) {
+                // Skip the header row and ensure the row has at least two columns
+                const item = row[0].trim().toLowerCase(); // Extract and normalize the item name
+                const value = parseFloat(row[1]) || row[1].trim(); // Convert to number if possible, otherwise trim the string
+
+                // Insert rows into the table
+                const newRow = tableBody.insertRow();
+                const cellItem = newRow.insertCell(0);
+                const cellValue = newRow.insertCell(1);
+                cellItem.textContent = item;
+                cellValue.textContent = value;
+
+                // Collect metrics for the chart and separate values for count-up
+                if (item === "engagement rate") {
+                  engagementRate = parseFloat(value) || 0;
+                } else if (item === "follower growth") {
+                  followerGrowth = parseFloat(value) || 0;
+                } else if (item === "total reached" || item === "reach") {
+                  totalReach = parseFloat(value) || 0;
+                } else if (item === "impressions") {
+                  impressions = parseFloat(value) || 0;
+                }
+
+                // Store for chart
+                metrics[item] = parseFloat(value) || 0;
+              }
+            });
+
+            // Update metrics display
+            document.getElementById(
+              "engagementRate"
+            ).textContent = `${engagementRate}%`;
+            document.getElementById("followerGrowth").textContent =
+              followerGrowth;
+            document.getElementById("totalReach").textContent = totalReach;
+            document.getElementById("impressions").textContent = impressions;
+
+            // Draw chart
+            drawChart(metrics);
+          },
+          error: function (error) {
+            console.error("Error fetching or parsing the CSV data:", error);
+          },
+        });
       });
 
       // Function to draw a chart using Chart.js
       function drawChart(metrics) {
         const ctx = document.getElementById("metricsChart").getContext("2d");
-
-        // Filter out non-numeric values
-        const chartMetrics = {};
-        Object.entries(metrics).forEach(([key, value]) => {
-          if (!isNaN(value) && typeof value === "number") {
-            chartMetrics[key] = value;
-          }
-        });
-
         new Chart(ctx, {
           type: "bar",
           data: {
-            labels: Object.keys(chartMetrics),
+            labels: Object.keys(metrics),
             datasets: [
               {
                 label: "Campaign Metrics",
-                data: Object.values(chartMetrics),
+                data: Object.values(metrics),
                 backgroundColor: "rgba(54, 162, 235, 0.6)",
                 borderColor: "rgba(54, 162, 235, 1)",
                 borderWidth: 1,
@@ -286,7 +214,5 @@
         });
       }
     </script>
-    <!-- Load auth.js after Google API scripts -->
-    <script src="auth.js"></script>
   </body>
 </html>
