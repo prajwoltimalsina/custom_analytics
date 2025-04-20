@@ -24,141 +24,315 @@
       onload="gisLoaded()"
     ></script>
     <script src="auth.js"></script>
+
+    <style>
+      /* Animation for metrics counters */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      /* Loading spinner */
+      .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
-  <body class="bg-gray-100">
+  <body class="bg-gray-100 min-h-screen">
     <!-- Alert Box for messages -->
     <div
       id="alertBox"
-      style="
-        display: none;
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        padding: 15px;
-        border-radius: 5px;
-        z-index: 1000;
-      "
+      class="hidden fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded z-50 shadow-lg"
+      role="alert"
     >
       <span id="alertMessage"></span>
+      <button
+        class="ml-4 font-bold"
+        onclick="document.getElementById('alertBox').classList.add('hidden')"
+      >
+        ×
+      </button>
     </div>
 
-    <div class="flex h-screen">
+    <div class="flex flex-col md:flex-row min-h-screen">
       <!-- Sidebar -->
-      <div class="w-64 bg-blue-800 text-white p-5">
-        <h2 class="text-3xl font-bold mb-6">Dashboard</h2>
+      <div class="w-full md:w-64 bg-blue-800 text-white p-5">
+        <h2 class="text-2xl md:text-3xl font-bold mb-6">Dashboard</h2>
 
-        <ul>
-          <li>
-            <a href="overview.html" class="block py-2 px-4 hover:bg-blue-700"
-              >Overview</a
+        <nav>
+          <ul class="space-y-2">
+            <li>
+              <a
+                href="overview.html"
+                class="block py-2 px-4 hover:bg-blue-700 rounded transition duration-200 text-lg md:text-xl"
+              >
+                <span class="mr-2"><i class="fas fa-home"></i></span>Overview
+              </a>
+            </li>
+            <li>
+              <a
+                href="dashboard.html"
+                class="block py-2 px-4 bg-blue-700 rounded transition duration-200 text-lg md:text-xl"
+              >
+                <span class="mr-2"><i class="fas fa-chart-bar"></i></span
+                >Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                id="signOutLink"
+                class="block py-2 px-4 hover:bg-blue-700 rounded transition duration-200 text-lg md:text-xl"
+              >
+                <span class="mr-2"><i class="fas fa-sign-out-alt"></i></span
+                >Logout
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- User Profile Section -->
+        <div class="mt-auto pt-5 border-t border-blue-700 mt-8">
+          <div class="flex items-center">
+            <div
+              id="userProfilePic"
+              class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"
             >
-          </li>
-          <li>
-            <a href="dashboard.html" class="block py-2 px-4 hover:bg-blue-700"
-              >Dashboard</a
-            >
-          </li>
-          <li>
-            <a href="#" class="block py-2 px-4 hover:bg-blue-700">Analytics</a>
-          </li>
-          <li>
-            <a href="#" class="block py-2 px-4 hover:bg-blue-700">Settings</a>
-          </li>
-          <li>
-            <a
-              href="#"
-              id="signOutLink"
-              class="block py-2 px-4 hover:bg-blue-700"
-              >Logout</a
-            >
-          </li>
-        </ul>
+              <!-- Will be populated with initials -->
+            </div>
+            <div class="ml-3">
+              <p id="userNameDisplay" class="font-medium">User</p>
+              <p id="userEmailDisplay" class="text-sm text-blue-200"></p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Main Content -->
-      <div class="flex-1 p-6">
-        <h1 class="text-3xl font-semibold text-center mb-8 text-blue-800">
-          Welcome, <span id="userNameDisplay">User</span> - Social Media
-          Campaign Dashboard
+      <div class="flex-1 p-4 md:p-6">
+        <h1
+          class="text-2xl md:text-3xl font-semibold text-center mb-6 md:mb-8 text-blue-800"
+        >
+          Social Media Campaign Dashboard
         </h1>
-        <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h5 class="text-xl font-semibold mb-2 text-blue-600">
-              Engagement Rate
-            </h5>
-            <h2 id="engagementRate" class="text-4xl font-bold">0%</h2>
+
+        <!-- Loading state -->
+        <div
+          id="loadingState"
+          class="flex flex-col items-center justify-center h-64"
+        >
+          <div class="loader mb-4"></div>
+          <p class="text-gray-600">Loading campaign data...</p>
+        </div>
+
+        <!-- Dashboard content - hidden until data loads -->
+        <div id="dashboardContent" class="hidden">
+          <!-- Metrics Cards -->
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
+          >
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in">
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Engagement Rate
+              </h5>
+              <h2 id="engagementRate" class="text-3xl md:text-4xl font-bold">
+                0%
+              </h2>
+              <p class="text-gray-500 text-sm mt-2">
+                Interactions per impression
+              </p>
+            </div>
+            <div
+              class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in"
+              style="animation-delay: 0.1s"
+            >
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Follower Growth
+              </h5>
+              <h2 id="followerGrowth" class="text-3xl md:text-4xl font-bold">
+                0
+              </h2>
+              <p class="text-gray-500 text-sm mt-2">
+                New followers this period
+              </p>
+            </div>
+            <div
+              class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in"
+              style="animation-delay: 0.2s"
+            >
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Total Reach
+              </h5>
+              <h2 id="totalReach" class="text-3xl md:text-4xl font-bold">0</h2>
+              <p class="text-gray-500 text-sm mt-2">Unique users reached</p>
+            </div>
+            <div
+              class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in"
+              style="animation-delay: 0.3s"
+            >
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Impressions
+              </h5>
+              <h2 id="impressions" class="text-3xl md:text-4xl font-bold">0</h2>
+              <p class="text-gray-500 text-sm mt-2">Total content views</p>
+            </div>
           </div>
-          <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h5 class="text-xl font-semibold mb-2 text-blue-600">
-              Follower Growth
-            </h5>
-            <h2 id="followerGrowth" class="text-4xl font-bold">0</h2>
+
+          <!-- Table and Chart Container -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Table for displaying CSV data -->
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                Campaign Data
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="py-2 px-4 border-b text-left font-semibold">
+                        Metric
+                      </th>
+                      <th class="py-2 px-4 border-b text-left font-semibold">
+                        Value
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="campaignTableBody">
+                    <!-- Data rows will be inserted here -->
+                    <tr>
+                      <td colspan="2" class="py-4 text-center text-gray-500">
+                        Loading data...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Chart section for visualizing selected data -->
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                Performance Metrics
+              </h3>
+              <div class="max-w-full h-64 md:h-80">
+                <canvas id="metricsChart"></canvas>
+              </div>
+            </div>
           </div>
-          <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h5 class="text-xl font-semibold mb-2 text-blue-600">
-              Total Reach
-            </h5>
-            <h2 id="totalReach" class="text-4xl font-bold">0</h2>
-          </div>
-          <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h5 class="text-xl font-semibold mb-2 text-blue-600">
-              Impressions
-            </h5>
-            <h2 id="impressions" class="text-4xl font-bold">0</h2>
+
+          <!-- Last Updated Section -->
+          <div class="mt-6 text-right text-sm text-gray-500">
+            <p>Last updated: <span id="lastUpdated">Loading...</span></p>
           </div>
         </div>
 
-        <!-- Table for displaying CSV data -->
-        <div class="overflow-x-auto bg-white p-6 rounded-lg shadow-lg mb-8">
-          <table class="min-w-full table-auto">
-            <thead>
-              <tr>
-                <th class="py-2 px-4 border-b text-left">Item</th>
-                <th class="py-2 px-4 border-b text-left">Value</th>
-              </tr>
-            </thead>
-            <tbody id="campaignTableBody">
-              <!-- Data rows will be inserted here -->
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Chart section for visualizing selected data -->
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-          <h3 class="text-xl font-semibold text-center mb-6 text-blue-600">
-            Campaign Performance Metrics
+        <!-- No Data State - shown if no data available -->
+        <div
+          id="noDataState"
+          class="hidden flex flex-col items-center justify-center h-64 bg-white p-6 rounded-lg shadow-lg"
+        >
+          <svg
+            class="w-16 h-16 text-gray-400 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 14h.01M8 20h8a4 4 0 00.97-7.88 4.5 4.5 0 00-8.94 0A4 4 0 008 20z"
+            ></path>
+          </svg>
+          <h3 class="text-xl font-medium text-gray-900 mb-2">
+            No campaign data available
           </h3>
-          <div class="max-w-full">
-            <canvas id="metricsChart"></canvas>
-          </div>
+          <p class="text-gray-600 text-center">
+            We couldn't find any campaign data. Try refreshing the page or check
+            back later.
+          </p>
+          <button
+            id="retryButton"
+            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-200"
+          >
+            Retry Loading Data
+          </button>
         </div>
       </div>
     </div>
 
+    <!-- Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Check if user is logged in - Fixed function call
-        const user = localStorage.getItem("user")
-          ? JSON.parse(localStorage.getItem("user"))
-          : null;
+        // Check if user is logged in
+        const user = checkAuthStatus();
 
         if (user) {
+          // Display user information
           document.getElementById("userNameDisplay").textContent =
             user.firstName + " " + user.lastName;
+          document.getElementById("userEmailDisplay").textContent = user.email;
+
+          // Set user initials in profile pic
+          const profilePic = document.getElementById("userProfilePic");
+          const initials = (
+            user.firstName.charAt(0) +
+            (user.lastName ? user.lastName.charAt(0) : "")
+          ).toUpperCase();
+          profilePic.textContent = initials;
         } else {
-          // Redirect to login if no user found
+          // Safety redirect to login if no user found
           window.location.href = "index.html";
           return;
         }
 
+        // Load data with error handling
+        loadCampaignData();
+
+        // Retry button event listener
+        document
+          .getElementById("retryButton")
+          .addEventListener("click", function () {
+            document.getElementById("noDataState").classList.add("hidden");
+            document.getElementById("loadingState").classList.remove("hidden");
+            loadCampaignData();
+          });
+      });
+
+      // Function to load campaign data with proper error handling
+      function loadCampaignData() {
+        // Show loading state
+        document.getElementById("loadingState").classList.remove("hidden");
+        document.getElementById("dashboardContent").classList.add("hidden");
+        document.getElementById("noDataState").classList.add("hidden");
+
         // Try to fetch campaign data using Google Sheets API first
         if (typeof gapi !== "undefined" && gapi.client && gapi.client.sheets) {
           fetchCampaignData(function (data, error) {
-            if (data) {
+            if (data && data.length > 0) {
               processCampaignData(data);
             } else {
               // Fall back to CSV approach if API fails
@@ -169,7 +343,7 @@
           // Fall back to CSV approach if Google API isn't ready
           fetchCSVData();
         }
-      });
+      }
 
       // Function to fetch data directly from published CSV
       function fetchCSVData() {
@@ -179,15 +353,27 @@
 
         Papa.parse(csvUrl, {
           download: true,
-          header: false, // Change to true if your CSV includes header row
+          header: false,
           complete: function (results) {
-            processCampaignData(results.data);
+            if (results.data && results.data.length > 0) {
+              processCampaignData(results.data);
+            } else {
+              showNoDataState();
+            }
           },
           error: function (error) {
             console.error("Error fetching or parsing the CSV data:", error);
-            showAlert("Error loading campaign data. Please try again later.");
+            showAlert("Error loading campaign data: " + error.message);
+            showNoDataState();
           },
         });
+      }
+
+      // Show the no data state
+      function showNoDataState() {
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("dashboardContent").classList.add("hidden");
+        document.getElementById("noDataState").classList.remove("hidden");
       }
 
       // Process campaign data regardless of source
@@ -203,19 +389,27 @@
         tableBody.innerHTML = "";
 
         // Process each row of the data
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           data.forEach((row, index) => {
-            if (index > 0 && row.length >= 2) {
-              // Skip the header row and ensure the row has at least two columns
-              const item = row[0].trim().toLowerCase(); // Extract and normalize the item name
-              const value = parseFloat(row[1]) || row[1].trim(); // Convert to number if possible, otherwise trim the string
+            if (row.length >= 2) {
+              // Extract and normalize the item name
+              const item = row[0].trim().toLowerCase();
+              // Convert to number if possible, otherwise trim the string
+              const value = parseFloat(row[1]) || row[1].trim();
 
               // Insert rows into the table
               const newRow = tableBody.insertRow();
               const cellItem = newRow.insertCell(0);
               const cellValue = newRow.insertCell(1);
-              cellItem.textContent = item;
-              cellValue.textContent = value;
+
+              // Add classes for styling
+              cellItem.className = "py-2 px-4 border-b";
+              cellValue.className = "py-2 px-4 border-b font-medium";
+
+              cellItem.textContent =
+                item.charAt(0).toUpperCase() + item.slice(1); // Capitalize
+              cellValue.textContent =
+                typeof value === "number" ? value.toLocaleString() : value;
 
               // Collect metrics for the chart and separate values for count-up
               if (item === "engagement rate") {
@@ -240,14 +434,29 @@
             "engagementRate"
           ).textContent = `${engagementRate}%`;
           document.getElementById("followerGrowth").textContent =
-            followerGrowth;
-          document.getElementById("totalReach").textContent = totalReach;
-          document.getElementById("impressions").textContent = impressions;
+            followerGrowth.toLocaleString();
+          document.getElementById("totalReach").textContent =
+            totalReach.toLocaleString();
+          document.getElementById("impressions").textContent =
+            impressions.toLocaleString();
+
+          // Set last updated timestamp
+          document.getElementById("lastUpdated").textContent =
+            new Date().toLocaleString();
 
           // Draw chart
           drawChart(metrics);
+
+          // Hide loading, show dashboard
+          document.getElementById("loadingState").classList.add("hidden");
+          document
+            .getElementById("dashboardContent")
+            .classList.remove("hidden");
         } else {
-          showAlert("Invalid data format received. Please try again later.");
+          showNoDataState();
+          showAlert(
+            "No campaign data available or invalid data format received."
+          );
         }
       }
 
@@ -255,28 +464,79 @@
       function drawChart(metrics) {
         const ctx = document.getElementById("metricsChart").getContext("2d");
 
+        // Destroy existing chart if it exists
+        if (window.campaignChart) {
+          window.campaignChart.destroy();
+        }
+
         // Only draw chart if we have data
         if (Object.keys(metrics).length > 0) {
-          new Chart(ctx, {
+          // Filter out very large values that would skew the chart
+          const chartMetrics = { ...metrics };
+          const values = Object.values(chartMetrics);
+          const max = Math.max(...values);
+          const min = Math.min(...values);
+
+          // If we have a huge range, consider using a logarithmic scale
+          const useLogScale = max / min > 1000;
+
+          window.campaignChart = new Chart(ctx, {
             type: "bar",
             data: {
-              labels: Object.keys(metrics),
+              labels: Object.keys(chartMetrics).map(
+                (key) => key.charAt(0).toUpperCase() + key.slice(1) // Capitalize labels
+              ),
               datasets: [
                 {
                   label: "Campaign Metrics",
-                  data: Object.values(metrics),
-                  backgroundColor: "rgba(54, 162, 235, 0.6)",
-                  borderColor: "rgba(54, 162, 235, 1)",
+                  data: Object.values(chartMetrics),
+                  backgroundColor: [
+                    "rgba(54, 162, 235, 0.6)",
+                    "rgba(255, 99, 132, 0.6)",
+                    "rgba(75, 192, 192, 0.6)",
+                    "rgba(255, 159, 64, 0.6)",
+                    "rgba(153, 102, 255, 0.6)",
+                  ],
+                  borderColor: [
+                    "rgba(54, 162, 235, 1)",
+                    "rgba(255, 99, 132, 1)",
+                    "rgba(75, 192, 192, 1)",
+                    "rgba(255, 159, 64, 1)",
+                    "rgba(153, 102, 255, 1)",
+                  ],
                   borderWidth: 1,
                 },
               ],
             },
             options: {
               responsive: true,
-              maintainAspectRatio: true,
+              maintainAspectRatio: false,
               scales: {
                 y: {
                   beginAtZero: true,
+                  type: useLogScale ? "logarithmic" : "linear",
+                  ticks: {
+                    callback: function (value) {
+                      if (value >= 1000000)
+                        return (value / 1000000).toFixed(1) + "M";
+                      if (value >= 1000) return (value / 1000).toFixed(1) + "K";
+                      return value;
+                    },
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      let value = context.raw;
+                      if (value >= 1000000)
+                        return (value / 1000000).toFixed(2) + " Million";
+                      if (value >= 1000)
+                        return (value / 1000).toFixed(2) + " Thousand";
+                      return value;
+                    },
+                  },
                 },
               },
             },
@@ -284,7 +544,13 @@
         } else {
           // Show message if no data
           ctx.font = "16px Arial";
-          ctx.fillText("No metric data available", 10, 50);
+          ctx.fillStyle = "#666";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            "No metric data available",
+            ctx.canvas.width / 2,
+            ctx.canvas.height / 2
+          );
         }
       }
 
@@ -295,10 +561,10 @@
 
         if (alertBox && alertMessage) {
           alertMessage.innerText = message;
-          alertBox.style.display = "block";
+          alertBox.classList.remove("hidden");
 
           setTimeout(() => {
-            alertBox.style.display = "none";
+            alertBox.classList.add("hidden");
           }, 5000);
         } else {
           // Fallback if alert elements don't exist
