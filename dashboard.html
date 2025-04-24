@@ -25,6 +25,9 @@
     ></script>
     <script src="auth.js"></script>
 
+    <!-- Add the new campaignData.js script -->
+    <script src="campaignData.js"></script>
+
     <style>
       /* Animation for metrics counters */
       @keyframes fadeIn {
@@ -73,6 +76,12 @@
         ×
       </button>
     </div>
+
+    <!-- Network status indicator -->
+    <div
+      id="networkStatus"
+      class="fixed bottom-5 right-5 px-3 py-1 rounded-full text-white font-medium"
+    ></div>
 
     <div class="flex flex-col md:flex-row min-h-screen">
       <!-- Sidebar -->
@@ -243,6 +252,7 @@
           <!-- Last Updated Section -->
           <div class="mt-6 text-right text-sm text-gray-500">
             <p>Last updated: <span id="lastUpdated">Loading...</span></p>
+            <p id="dataSource" class="text-xs mt-1 text-gray-400"></p>
           </div>
         </div>
 
@@ -286,7 +296,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
+      // Status indicator for online/offline
+      const networkStatus = document.getElementById("networkStatus");
+
+      function updateNetworkStatus() {
+        if (navigator.onLine) {
+          networkStatus.textContent = "Online";
+          networkStatus.classList.add("bg-green-500");
+          networkStatus.classList.remove("bg-red-500");
+        } else {
+          networkStatus.textContent = "Offline";
+          networkStatus.classList.add("bg-red-500");
+          networkStatus.classList.remove("bg-green-500");
+        }
+      }
+
+      // Listen for network status changes
+      window.addEventListener("online", () => {
+        updateNetworkStatus();
+        // Optionally refresh data when coming back online
+        loadCampaignData();
+      });
+
+      window.addEventListener("offline", () => {
+        updateNetworkStatus();
+      });
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        // Initialize network status
+        updateNetworkStatus();
+
+        // Initialize the campaign database
+        try {
+          await initCampaignDB();
+        } catch (error) {
+          console.error("Failed to initialize campaign database:", error);
+        }
+
         // Check if user is logged in
         const user = checkAuthStatus();
 
@@ -309,7 +355,7 @@
           return;
         }
 
-        // Load data with error handling
+        // Load data with offline support
         loadCampaignData();
 
         // Retry button event listener
@@ -322,51 +368,33 @@
           });
       });
 
-      // Function to load campaign data with proper error handling
-      function loadCampaignData() {
+      // Function to load campaign data with offline support
+      async function loadCampaignData() {
         // Show loading state
         document.getElementById("loadingState").classList.remove("hidden");
         document.getElementById("dashboardContent").classList.add("hidden");
         document.getElementById("noDataState").classList.add("hidden");
 
-        // Try to fetch campaign data using Google Sheets API first
-        if (typeof gapi !== "undefined" && gapi.client && gapi.client.sheets) {
-          fetchCampaignData(function (data, error) {
-            if (data && data.length > 0) {
-              processCampaignData(data);
-            } else {
-              // Fall back to CSV approach if API fails
-              fetchCSVData();
-            }
-          });
-        } else {
-          // Fall back to CSV approach if Google API isn't ready
-          fetchCSVData();
-        }
-      }
+        try {
+          // Use our new function that supports offline mode
+          const data = await fetchCampaignDataWithOfflineSupport();
 
-      // Function to fetch data directly from published CSV
-      function fetchCSVData() {
-        // CSV URL from published Google Sheet
-        const csvUrl =
-          "https://docs.google.com/spreadsheets/d/e/2PACX-1vShkyha9RUILD6tgutsA9KqriklzAITyydxblmfyYvRvC7lLS60JMsVM3am-8wwu5Kt5a9mHSDvoQgO/pub?output=csv";
+          if (data && data.length > 0) {
+            // Set data source indicator
+            document.getElementById("dataSource").textContent = navigator.onLine
+              ? "Data from server"
+              : "Data from offline storage";
 
-        Papa.parse(csvUrl, {
-          download: true,
-          header: false,
-          complete: function (results) {
-            if (results.data && results.data.length > 0) {
-              processCampaignData(results.data);
-            } else {
-              showNoDataState();
-            }
-          },
-          error: function (error) {
-            console.error("Error fetching or parsing the CSV data:", error);
-            showAlert("Error loading campaign data: " + error.message);
+            // Process the data
+            processCampaignData(data);
+          } else {
             showNoDataState();
-          },
-        });
+          }
+        } catch (error) {
+          console.error("Error loading campaign data:", error);
+          showAlert("Error loading campaign data: " + error.message);
+          showNoDataState();
+        }
       }
 
       // Show the no data state
