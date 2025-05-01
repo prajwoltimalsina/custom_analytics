@@ -25,8 +25,9 @@
     ></script>
     <script src="auth.js"></script>
 
-    <!-- Add the new campaignData.js script -->
+    <!-- Data handling scripts -->
     <script src="campaignData.js"></script>
+    <script src="tabData.js"></script>
 
     <style>
       /* Animation for metrics counters */
@@ -58,6 +59,19 @@
         100% {
           transform: rotate(360deg);
         }
+      }
+
+      /* Tab styles */
+      .tab-button {
+        @apply py-2 px-4 font-medium focus:outline-none transition-colors duration-200;
+      }
+
+      .tab-button.active {
+        @apply bg-blue-600 text-white rounded-t-lg;
+      }
+
+      .tab-button:not(.active) {
+        @apply text-blue-600 hover:bg-blue-100 rounded-t-lg;
       }
     </style>
   </head>
@@ -156,6 +170,37 @@
 
         <!-- Dashboard content - hidden until data loads -->
         <div id="dashboardContent" class="hidden">
+          <!-- Tab Navigation -->
+          <div class="mb-6 border-b border-gray-200">
+            <ul id="tabNavigation" class="flex flex-wrap text-center">
+              <li class="mr-1">
+                <button data-tab-id="campaign" class="tab-button active">
+                  Campaign
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="facebook" class="tab-button">
+                  Facebook
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="instagram" class="tab-button">
+                  Instagram
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="twitter" class="tab-button">
+                  Twitter
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="linkedin" class="tab-button">
+                  LinkedIn
+                </button>
+              </li>
+            </ul>
+          </div>
+
           <!-- Metrics Cards -->
           <div
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
@@ -211,7 +256,10 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Table for displaying CSV data -->
             <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-              <h3 class="text-xl font-semibold mb-4 text-blue-600">
+              <h3
+                id="tabDataTitle"
+                class="text-xl font-semibold mb-4 text-blue-600"
+              >
                 Campaign Data
               </h3>
               <div class="overflow-x-auto">
@@ -276,11 +324,11 @@
             ></path>
           </svg>
           <h3 class="text-xl font-medium text-gray-900 mb-2">
-            No campaign data available
+            No data available
           </h3>
           <p class="text-gray-600 text-center">
-            We couldn't find any campaign data. Try refreshing the page or check
-            back later.
+            We couldn't find any data for this tab. Try refreshing the page or
+            check back later.
           </p>
           <button
             id="retryButton"
@@ -296,6 +344,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
 
     <script>
+      // Current active tab
+      let currentTabId = "campaign";
+
       // Status indicator for online/offline
       const networkStatus = document.getElementById("networkStatus");
 
@@ -315,7 +366,7 @@
       window.addEventListener("online", () => {
         updateNetworkStatus();
         // Optionally refresh data when coming back online
-        loadCampaignData();
+        loadTabData(currentTabId);
       });
 
       window.addEventListener("offline", () => {
@@ -326,11 +377,12 @@
         // Initialize network status
         updateNetworkStatus();
 
-        // Initialize the campaign database
+        // Initialize the databases
         try {
           await initCampaignDB();
+          await initTabsDB();
         } catch (error) {
-          console.error("Failed to initialize campaign database:", error);
+          console.error("Failed to initialize databases:", error);
         }
 
         // Check if user is logged in
@@ -355,8 +407,11 @@
           return;
         }
 
-        // Load data with offline support
-        loadCampaignData();
+        // Set up tab navigation
+        setupTabNavigation();
+
+        // Load default tab data
+        loadTabData(currentTabId);
 
         // Retry button event listener
         document
@@ -364,20 +419,73 @@
           .addEventListener("click", function () {
             document.getElementById("noDataState").classList.add("hidden");
             document.getElementById("loadingState").classList.remove("hidden");
-            loadCampaignData();
+            loadTabData(currentTabId);
+          });
+
+        // Sign out link event listener
+        document
+          .getElementById("signOutLink")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            signOut();
           });
       });
 
-      // Function to load campaign data with offline support
-      async function loadCampaignData() {
+      // Handle alert messages
+      function showAlert(message) {
+        const alertBox = document.getElementById("alertBox");
+        const alertMessage = document.getElementById("alertMessage");
+
+        alertMessage.textContent = message;
+        alertBox.classList.remove("hidden");
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          alertBox.classList.add("hidden");
+        }, 5000);
+      }
+
+      // Set up tab navigation
+      function setupTabNavigation() {
+        const tabButtons = document.querySelectorAll(".tab-button");
+
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            // Remove active class from all buttons
+            tabButtons.forEach((btn) => btn.classList.remove("active"));
+
+            // Add active class to clicked button
+            this.classList.add("active");
+
+            // Get tab ID from data attribute
+            const tabId = this.getAttribute("data-tab-id");
+
+            // Load the selected tab data
+            loadTabData(tabId);
+          });
+        });
+      }
+
+      // Function to load tab data
+      async function loadTabData(tabId) {
+        // Update current tab ID
+        currentTabId = tabId;
+
+        // Update tab title
+        const tabTitle = document.getElementById("tabDataTitle");
+        const tabConfig = AVAILABLE_TABS.find((tab) => tab.id === tabId);
+        tabTitle.textContent = tabConfig
+          ? `${tabConfig.name} Data`
+          : "Campaign Data";
+
         // Show loading state
         document.getElementById("loadingState").classList.remove("hidden");
         document.getElementById("dashboardContent").classList.add("hidden");
         document.getElementById("noDataState").classList.add("hidden");
 
         try {
-          // Use our new function that supports offline mode
-          const data = await fetchCampaignDataWithOfflineSupport();
+          // Use the tab data function that supports offline mode
+          const data = await fetchTabDataWithOfflineSupport(tabId);
 
           if (data && data.length > 0) {
             // Set data source indicator
@@ -386,13 +494,13 @@
               : "Data from offline storage";
 
             // Process the data
-            processCampaignData(data);
+            processTabData(data);
           } else {
             showNoDataState();
           }
         } catch (error) {
-          console.error("Error loading campaign data:", error);
-          showAlert("Error loading campaign data: " + error.message);
+          console.error(`Error loading data for tab ${tabId}:`, error);
+          showAlert(`Error loading data for ${tabId}: ${error.message}`);
           showNoDataState();
         }
       }
@@ -404,8 +512,8 @@
         document.getElementById("noDataState").classList.remove("hidden");
       }
 
-      // Process campaign data regardless of source
-      function processCampaignData(data) {
+      // Process tab data
+      function processTabData(data) {
         const tableBody = document.getElementById("campaignTableBody");
         const metrics = {};
         let engagementRate = 0;
@@ -483,7 +591,7 @@
         } else {
           showNoDataState();
           showAlert(
-            "No campaign data available or invalid data format received."
+            `No data available for ${currentTabId} or invalid data format received.`
           );
         }
       }
@@ -516,20 +624,22 @@
               ),
               datasets: [
                 {
-                  label: "Campaign Metrics",
+                  label: `${
+                    currentTabId.charAt(0).toUpperCase() + currentTabId.slice(1)
+                  } Metrics`,
                   data: Object.values(chartMetrics),
                   backgroundColor: [
                     "rgba(54, 162, 235, 0.6)",
                     "rgba(255, 99, 132, 0.6)",
                     "rgba(75, 192, 192, 0.6)",
-                    "rgba(255, 159, 64, 0.6)",
+                    "rgba(255, 206, 86, 0.6)",
                     "rgba(153, 102, 255, 0.6)",
                   ],
                   borderColor: [
                     "rgba(54, 162, 235, 1)",
                     "rgba(255, 99, 132, 1)",
                     "rgba(75, 192, 192, 1)",
-                    "rgba(255, 159, 64, 1)",
+                    "rgba(255, 206, 86, 1)",
                     "rgba(153, 102, 255, 1)",
                   ],
                   borderWidth: 1,
@@ -545,23 +655,30 @@
                   type: useLogScale ? "logarithmic" : "linear",
                   ticks: {
                     callback: function (value) {
-                      if (value >= 1000000)
+                      if (value >= 1000000) {
                         return (value / 1000000).toFixed(1) + "M";
-                      if (value >= 1000) return (value / 1000).toFixed(1) + "K";
+                      } else if (value >= 1000) {
+                        return (value / 1000).toFixed(1) + "K";
+                      }
                       return value;
                     },
                   },
                 },
               },
               plugins: {
+                legend: {
+                  display: true,
+                  position: "top",
+                },
                 tooltip: {
                   callbacks: {
                     label: function (context) {
                       let value = context.raw;
-                      if (value >= 1000000)
+                      if (value >= 1000000) {
                         return (value / 1000000).toFixed(2) + " Million";
-                      if (value >= 1000)
-                        return (value / 1000).toFixed(2) + " Thousand";
+                      } else if (value >= 1000) {
+                        return (value / 1000).toFixed(1) + " Thousand";
+                      }
                       return value;
                     },
                   },
@@ -569,34 +686,6 @@
               },
             },
           });
-        } else {
-          // Show message if no data
-          ctx.font = "16px Arial";
-          ctx.fillStyle = "#666";
-          ctx.textAlign = "center";
-          ctx.fillText(
-            "No metric data available",
-            ctx.canvas.width / 2,
-            ctx.canvas.height / 2
-          );
-        }
-      }
-
-      // Helper function to display alerts
-      function showAlert(message) {
-        const alertBox = document.getElementById("alertBox");
-        const alertMessage = document.getElementById("alertMessage");
-
-        if (alertBox && alertMessage) {
-          alertMessage.innerText = message;
-          alertBox.classList.remove("hidden");
-
-          setTimeout(() => {
-            alertBox.classList.add("hidden");
-          }, 5000);
-        } else {
-          // Fallback if alert elements don't exist
-          alert(message);
         }
       }
     </script>
