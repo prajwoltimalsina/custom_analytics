@@ -361,3 +361,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// Google API loader callback
+function gapiLoaded() {
+  gapi.load('client', initializeGapiClient);
+}
+
+// Google Identity Services loader (optional)
+function gisLoaded() {
+  console.log("Google Identity Services loaded.");
+}
+
+// Initialize the Google Sheets API client
+async function initializeGapiClient() {
+  await gapi.client.init({
+    apiKey: 'AIzaSyBoBMlw_eC3y88AzhbhNSVgLNZ-nz93n2A',
+    discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+  });
+  console.log('✅ Google Sheets API client initialized');
+}
