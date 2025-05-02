@@ -249,7 +249,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
   <!-- Table for displaying data -->
   <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-    <h3 id="tabDataTitle" class="text-xl font-semibold mb-4 text-blue-600">
+    <h3 id="tabdataTitle" class="text-xl font-semibold mb-4 text-blue-600">
       Campaign Data
     </h3>
     <div class="overflow-x-auto">
@@ -461,7 +461,7 @@
         currentTabId = tabId;
 
         // Update tab title
-        const tabTitle = document.getElementById("tabDataTitle");
+        const tabTitle = document.getElementById("tabdataTitle");
         const tabConfig = AVAILABLE_TABS.find((tab) => tab.id === tabId);
         tabTitle.textContent = tabConfig
           ? `${tabConfig.name} Data`
@@ -686,7 +686,7 @@ async function loadTabData(tabId) {
   currentTabId = tabId;
 
   // Update tab title
-  const tabTitle = document.getElementById("tabDataTitle");
+  const tabTitle = document.getElementById("tabdataTitle");
   const tabConfig = AVAILABLE_TABS.find((tab) => tab.id === tabId);
   tabTitle.textContent = tabConfig ? `${tabConfig.name} Data` : "Campaign Data";
 
