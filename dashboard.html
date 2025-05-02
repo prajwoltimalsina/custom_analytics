@@ -15,14 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <!-- Google API Scripts -->
-    <script
-      src="https://apis.google.com/js/api.js"
-      onload="gapiLoaded()"
-    ></script>
-    <script
-      src="https://accounts.google.com/gsi/client"
-      onload="gisLoaded()"
-    ></script>
+   
    
 
     <script>
@@ -31,21 +24,22 @@
       }
     
       function gisLoaded() {
-        console.log('Google Identity Services loaded');
+        console.log("Google Identity Services loaded");
       }
     
       async function initializeGapiClient() {
         await gapi.client.init({
-          apiKey: 'AIzaSyBoBMlw_eC3y88AzhbhNSVgLNZ-nz93n2A',
+          Api_Key: 'AIzaSyBoBMlw_eC3y88AzhbhNSVgLNZ-nz93n2A',
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
-        console.log('✅ Google Sheets API client initialized');
+        console.log("✅ Google Sheets API client initialized");
       }
     </script>
+    
 
 
 
-    <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
 
@@ -54,7 +48,7 @@
 <!-- Data handling scripts -->
 <script src="campaignData.js"></script>
 <script src="tabdata.js"></script>
-<script src="script.js"></script>
+
     <style>
       /* Animation for metrics counters */
       @keyframes fadeIn {
@@ -400,24 +394,23 @@
         // Check if user is logged in
         const user = checkAuthStatus();
 
-        if (user) {
-          // Display user information
-          document.getElementById("userNameDisplay").textContent =
-            user.firstName + " " + user.lastName;
-          document.getElementById("userEmailDisplay").textContent = user.email;
+if (user) {
+  document.getElementById("userNameDisplay").textContent =
+    user.firstName + " " + user.lastName;
+  document.getElementById("userEmailDisplay").textContent = user.email;
 
-          // Set user initials in profile pic
-          const profilePic = document.getElementById("userProfilePic");
-          const initials = (
-            user.firstName.charAt(0) +
-            (user.lastName ? user.lastName.charAt(0) : "")
-          ).toUpperCase();
-          profilePic.textContent = initials;
-        } else {
-          // Safety redirect to login if no user found
-          window.location.href = "index.html";
-          return;
-        }
+  const profilePic = document.getElementById("userProfilePic");
+  const initials = (
+    user.firstName.charAt(0) +
+    (user.lastName ? user.lastName.charAt(0) : "")
+  ).toUpperCase();
+  profilePic.textContent = initials;
+} else {
+  // 👇 Allow anonymous access — just hide profile info
+  document.getElementById("userNameDisplay").textContent = "Guest";
+  document.getElementById("userEmailDisplay").textContent = "";
+  document.getElementById("userProfilePic").textContent = "?";
+}
 
         // Set up tab navigation
         setupTabNavigation();
