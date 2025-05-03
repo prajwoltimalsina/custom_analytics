@@ -13,34 +13,14 @@
 
     <!-- PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-
+    <script src="auth.js"></script>
     <!-- Google API Scripts -->
+    
+    <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    
+
    
-   
-
-    <script>
-      function gapiLoaded() {
-        gapi.load('client', initializeGapiClient);
-      }
-    
-      function gisLoaded() {
-        console.log("Google Identity Services loaded");
-      }
-    
-      async function initializeGapiClient() {
-        await gapi.client.init({
-          Api_Key: 'AIzaSyBoBMlw_eC3y88AzhbhNSVgLNZ-nz93n2A',
-          discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-        });
-        console.log("✅ Google Sheets API client initialized");
-      }
-    </script>
-    
-
-
-
-<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
 
 <script src="auth.js"></script>
@@ -48,7 +28,6 @@
 <!-- Data handling scripts -->
 <script src="campaignData.js"></script>
 <script src="tabdata.js"></script>
-
     <style>
       /* Animation for metrics counters */
       @keyframes fadeIn {
@@ -266,7 +245,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
   <!-- Table for displaying data -->
   <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-    <h3 id="tabdataTitle" class="text-xl font-semibold mb-4 text-blue-600">
+    <h3 id="tabDataTitle" class="text-xl font-semibold mb-4 text-blue-600">
       Campaign Data
     </h3>
     <div class="overflow-x-auto">
@@ -394,23 +373,24 @@
         // Check if user is logged in
         const user = checkAuthStatus();
 
-if (user) {
-  document.getElementById("userNameDisplay").textContent =
-    user.firstName + " " + user.lastName;
-  document.getElementById("userEmailDisplay").textContent = user.email;
+        if (user) {
+          // Display user information
+          document.getElementById("userNameDisplay").textContent =
+            user.firstName + " " + user.lastName;
+          document.getElementById("userEmailDisplay").textContent = user.email;
 
-  const profilePic = document.getElementById("userProfilePic");
-  const initials = (
-    user.firstName.charAt(0) +
-    (user.lastName ? user.lastName.charAt(0) : "")
-  ).toUpperCase();
-  profilePic.textContent = initials;
-} else {
-  // 👇 Allow anonymous access — just hide profile info
-  document.getElementById("userNameDisplay").textContent = "Guest";
-  document.getElementById("userEmailDisplay").textContent = "";
-  document.getElementById("userProfilePic").textContent = "?";
-}
+          // Set user initials in profile pic
+          const profilePic = document.getElementById("userProfilePic");
+          const initials = (
+            user.firstName.charAt(0) +
+            (user.lastName ? user.lastName.charAt(0) : "")
+          ).toUpperCase();
+          profilePic.textContent = initials;
+        } else {
+          // Safety redirect to login if no user found
+          window.location.href = "index.html";
+          return;
+        }
 
         // Set up tab navigation
         setupTabNavigation();
@@ -477,7 +457,7 @@ if (user) {
         currentTabId = tabId;
 
         // Update tab title
-        const tabTitle = document.getElementById("tabdataTitle");
+        const tabTitle = document.getElementById("tabDataTitle");
         const tabConfig = AVAILABLE_TABS.find((tab) => tab.id === tabId);
         tabTitle.textContent = tabConfig
           ? `${tabConfig.name} Data`
@@ -702,7 +682,7 @@ async function loadTabData(tabId) {
   currentTabId = tabId;
 
   // Update tab title
-  const tabTitle = document.getElementById("tabdataTitle");
+  const tabTitle = document.getElementById("tabDataTitle");
   const tabConfig = AVAILABLE_TABS.find((tab) => tab.id === tabId);
   tabTitle.textContent = tabConfig ? `${tabConfig.name} Data` : "Campaign Data";
 
