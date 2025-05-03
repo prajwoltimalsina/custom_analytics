@@ -125,14 +125,11 @@
               </a>
             </li>
             <li>
-              <a
-                href="#"
-                id="signOutLink"
-                class="block py-2 px-4 hover:bg-blue-700 rounded transition duration-200 text-lg md:text-xl"
-              >
-                <span class="mr-2"><i class="fas fa-sign-out-alt"></i></span
-                >Logout
-              </a>
+              <button id="logoutButton" style="font-size: 18px; padding-left: 8px;">
+                <span style="margin-right: 8px;">🔓</span> Log Out
+              </button>
+              
+
             </li>
           </ul>
         </nav>
@@ -987,6 +984,16 @@ function showNoDataState() {
   document.getElementById("dashboardContent").classList.add("hidden");
   document.getElementById("noDataState").classList.remove("hidden");
 }
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+  const logoutBtn = document.getElementById('logoutButton');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', logout); // Call your existing logout() function
+  }
+});
+
     </script>
   </body>
 </html>

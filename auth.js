@@ -303,65 +303,93 @@ function logout() {
 }
 
 // Display alert message
+
+// Function to show alert
 function showAlert(message) {
-  const alertBox = document.getElementById('alertBox');
-  const alertMessage = document.getElementById('alertMessage');
-  
-  if (alertBox && alertMessage) {
-    alertMessage.innerText = message;
-    alertBox.style.display = 'block';
-    
-    setTimeout(() => {
-      alertBox.style.display = 'none';
-    }, 5000);
-  } else {
-    // Fallback if alert elements don't exist
-    alert(message);
-  }
+  const alertBox = document.getElementById("alertBox");
+  const alertMessage = document.getElementById("alertMessage");
+  alertMessage.textContent = message;
+  alertBox.style.display = "block";
+  setTimeout(() => (alertBox.style.display = "none"), 3000);
 }
 
-// Set up event listeners for sign-in/sign-up forms
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle manual sign-in form submission
-  const signinForm = document.getElementById('signinForm');
-  if (signinForm) {
-    signinForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = document.getElementById('signinEmail').value;
-      const password = document.getElementById('signinPassword').value;
-      handleManualSignIn(email, password);
-    });
-  }
-  
-  // Handle manual sign-up form submission
-  const signupForm = document.getElementById('signupForm');
-  if (signupForm) {
-    signupForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const firstName = document.getElementById('fName').value;
-      const lastName = document.getElementById('lName').value;
-      const email = document.getElementById('signupEmail').value;
-      
-      currentUser = {
-        email: email,
-        firstName: firstName,
-        lastName: lastName
-      };
-      
-      localStorage.setItem('user', JSON.stringify(currentUser));
-      window.location.href = 'dashboard.html';
-    });
-  }
-  
-  // Set up logout button if it exists
-  const logoutButton = document.getElementById('signOutLink');
-  if (logoutButton) {
-    logoutButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      logout();
-    });
+// Signup logic
+document.getElementById("signupForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const fName = document.getElementById("fName").value.trim();
+  const lName = document.getElementById("lName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+
+  const users = JSON.parse(localStorage.getItem("users")) || {};
+
+  if (users[email]) {
+    showAlert("This email is already registered!");
+  } else {
+    users[email] = { fName, lName, password };
+    localStorage.setItem("users", JSON.stringify(users));
+    showAlert("Registration successful!");
+    // Switch to sign in form
+    document.getElementById("signIn").style.display = "block";
+    document.getElementById("signup").style.display = "none";
   }
 });
+
+// Signin logic
+document.getElementById("signinForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById("signinEmail").value.trim();
+  const password = document.getElementById("signinPassword").value;
+
+  const users = JSON.parse(localStorage.getItem("users")) || {};
+
+  if (!users[email]) {
+    showAlert("Email not found!");
+  } else if (users[email].password !== password) {
+    showAlert("Incorrect password!");
+  } else {
+    showAlert("Login successful!");
+
+    // Store user info
+    currentUser = {
+      email: email,
+      firstName: users[email].fName,
+      lastName: users[email].lName,
+    };
+    localStorage.setItem("user", JSON.stringify(currentUser));
+
+    // Redirect to dashboard
+    window.location.href = 'dashboard.html';
+  }
+});
+
+
+
+  
+  
+function logout() {
+  // Remove local user data
+  localStorage.removeItem('user');
+
+  // Sign out from Google if available
+  if (typeof gapi !== 'undefined' && gapi.auth2) {
+    const auth2 = gapi.auth2.getAuthInstance();
+    if (auth2) {
+      auth2.signOut().then(function () {
+        console.log('Google user signed out.');
+        window.location.href = 'index.html';
+      });
+      return;
+    }
+  }
+
+  // Fallback redirect
+  window.location.href = 'index.html';
+}
+
+
 
 // Google API loader callback
 function gapiLoaded() {
