@@ -7,6 +7,7 @@ const API_KEY = 'AIzaSyBoBMlw_eC3y88AzhbhNSVgLNZ-nz93n2A';
 // The spreadsheet ID for your "database" - Keep this the same
 const SPREADSHEET_ID = '1w1VZa8GXuwJGgTAk8wxEQ-9q4ZtIv26sAQUprKDHR30';
 
+
 // Authentication state
 let isAuthenticated = false;
 let currentUser = null;
