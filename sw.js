@@ -15,6 +15,8 @@ workbox.routing.registerRoute(
     cacheName: 'asset-cache',
   })
 );
+const CACHE_VERSION = 'v2'; // Increment this whenever you update sw.js
+const cacheName = `api-cache-${CACHE_VERSION}`;
 
 // Cache Google Sheets data (CSV and API responses)
 workbox.routing.registerRoute(

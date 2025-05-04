@@ -13,25 +13,19 @@
 
     <!-- PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-   
-    
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
 
     <!-- Google API Scripts -->
-    
-   <!-- ✅ Cleaned-up script tags -->
-<script src="https://apis.google.com/js/api.js" async defer></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+    <!-- Auth script needs to be loaded before DOM content is accessed -->
+    <script src="auth.js"></script>
 
-   
-
-
-<script src="auth.js"></script>
-
-<!-- Data handling scripts -->
-<script src="campaignData.js"></script>
-<script src="tabdata.js"></script>
+    <!-- Data handling scripts -->
+    <script src="campaignData.js"></script>
+    <script src="tabdata.js"></script>
     <style>
       /* Animation for metrics counters */
       @keyframes fadeIn {
@@ -125,11 +119,12 @@
               </a>
             </li>
             <li>
-              <button id="logoutButton" style="font-size: 18px; padding-left: 8px;">
-                <span style="margin-right: 8px;">🔓</span> Log Out
+              <button
+                id="logoutButton"
+                style="font-size: 18px; padding-left: 8px"
+              >
+                <span style="margin-right: 8px">🔓</span> Log Out
               </button>
-              
-
             </li>
           </ul>
         </nav>
@@ -170,125 +165,139 @@
 
         <!-- Dashboard content - hidden until data loads -->
         <div id="dashboardContent" class="hidden">
-<!-- No need to replace the entire file, just modify the Tab Navigation section -->
+          <!-- Tab Navigation -->
+          <div class="mb-6 border-b border-gray-200">
+            <ul id="tabNavigation" class="flex flex-wrap text-center">
+              <li class="mr-1">
+                <button data-tab-id="campaign" class="tab-button active">
+                  | Campaign |
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="facebook" class="tab-button">
+                  | Facebook |
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="instagram" class="tab-button">
+                  | Instagram |
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="twitter" class="tab-button">
+                  | Twitter |
+                </button>
+              </li>
+              <li class="mr-1">
+                <button data-tab-id="linkedin" class="tab-button">
+                  | Linkedin |
+                </button>
+              </li>
+            </ul>
+          </div>
 
-<!-- Tab Navigation -->
-<div class="mb-6 border-b border-gray-200">
-  <ul id="tabNavigation" class="flex flex-wrap text-center">
-    <li class="mr-1">
-      <button data-tab-id="campaign" class="tab-button active">
-       | Campaign |         
-    </li>
-    <li class="mr-1">
-      <button data-tab-id="facebook" class="tab-button">
-      | Facebook |
-      </button>
-    </li>
-    <li class="mr-1">
-      <button data-tab-id="instagram" class="tab-button">
-        | Instagram |
-      </button>
-    </li>
-    <li class="mr-1">
-      <button data-tab-id="twitter" class="tab-button">
-       | Twitter |
-      </button>
-    </li>
-    <li class="mr-1">
-      <button data-tab-id="linkedin" class="tab-button">
-        | Linkedin |
-      </button>
-    </li>
-  </ul>
-</div>
+          <!-- Metrics Cards - Will be updated dynamically based on the active tab -->
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
+          >
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in">
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Engagement Rate
+              </h5>
+              <h2 id="engagementRate" class="text-3xl md:text-4xl font-bold">
+                0%
+              </h2>
+              <p class="text-gray-500 text-sm mt-2">
+                Interactions per impression
+              </p>
+            </div>
+            <div
+              class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in"
+              style="animation-delay: 0.1s"
+            >
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Follower Growth
+              </h5>
+              <h2 id="followerGrowth" class="text-3xl md:text-4xl font-bold">
+                0
+              </h2>
+              <p class="text-gray-500 text-sm mt-2">
+                New followers this period
+              </p>
+            </div>
+            <div
+              class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in"
+              style="animation-delay: 0.2s"
+            >
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Total Reach
+              </h5>
+              <h2 id="totalReach" class="text-3xl md:text-4xl font-bold">0</h2>
+              <p class="text-gray-500 text-sm mt-2">Unique users reached</p>
+            </div>
+            <div
+              class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in"
+              style="animation-delay: 0.3s"
+            >
+              <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
+                Impressions
+              </h5>
+              <h2 id="impressions" class="text-3xl md:text-4xl font-bold">0</h2>
+              <p class="text-gray-500 text-sm mt-2">Total content views</p>
+            </div>
+          </div>
 
-<!-- Metrics Cards - Will be updated dynamically based on the active tab -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in">
-    <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
-      Engagement Rate
-    </h5>
-    <h2 id="engagementRate" class="text-3xl md:text-4xl font-bold">
-      0%
-    </h2>
-    <p class="text-gray-500 text-sm mt-2">
-      Interactions per impression
-    </p>
-  </div>
-  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in" style="animation-delay: 0.1s">
-    <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
-      Follower Growth
-    </h5>
-    <h2 id="followerGrowth" class="text-3xl md:text-4xl font-bold">
-      0
-    </h2>
-    <p class="text-gray-500 text-sm mt-2">
-      New followers this period
-    </p>
-  </div>
-  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in" style="animation-delay: 0.2s">
-    <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
-      Total Reach
-    </h5>
-    <h2 id="totalReach" class="text-3xl md:text-4xl font-bold">0</h2>
-    <p class="text-gray-500 text-sm mt-2">Unique users reached</p>
-  </div>
-  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg fade-in" style="animation-delay: 0.3s">
-    <h5 class="text-lg md:text-xl font-semibold mb-2 text-blue-600">
-      Impressions
-    </h5>
-    <h2 id="impressions" class="text-3xl md:text-4xl font-bold">0</h2>
-    <p class="text-gray-500 text-sm mt-2">Total content views</p>
-  </div>
-</div>
+          <!-- Table and Chart Container -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Table for displaying data -->
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <h3
+                id="tabDataTitle"
+                class="text-xl font-semibold mb-4 text-blue-600"
+              >
+                Campaign Data
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="py-2 px-4 border-b text-left font-semibold">
+                        Metric
+                      </th>
+                      <th class="py-2 px-4 border-b text-left font-semibold">
+                        Value
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="campaignTableBody">
+                    <!-- Data rows will be inserted here -->
+                    <tr>
+                      <td colspan="2" class="py-4 text-center text-gray-500">
+                        Loading data...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-<!-- Table and Chart Container -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Table for displaying data -->
-  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-    <h3 id="tabDataTitle" class="text-xl font-semibold mb-4 text-blue-600">
-      Campaign Data
-    </h3>
-    <div class="overflow-x-auto">
-      <table class="min-w-full table-auto">
-        <thead>
-          <tr class="bg-gray-50">
-            <th class="py-2 px-4 border-b text-left font-semibold">
-              Metric
-            </th>
-            <th class="py-2 px-4 border-b text-left font-semibold">
-              Value
-            </th>
-          </tr>
-        </thead>
-        <tbody id="campaignTableBody">
-          <!-- Data rows will be inserted here -->
-          <tr>
-            <td colspan="2" class="py-4 text-center text-gray-500">
-              Loading data...
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+            <!-- Chart section for visualizing selected data -->
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                Performance Metrics
+              </h3>
+              <div class="max-w-full h-64 md:h-80">
+                <canvas id="metricsChart"></canvas>
+              </div>
+            </div>
+          </div>
 
-  <!-- Chart section for visualizing selected data -->
-  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-    <h3 class="text-xl font-semibold mb-4 text-blue-600">
-      Performance Metrics
-    </h3>
-    <div class="max-w-full h-64 md:h-80">
-      <canvas id="metricsChart"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- Last Updated Section -->
-<div class="mt-6 text-right text-sm text-gray-500">
-  <p>Last updated: <span id="lastUpdated">Loading...</span></p>
-  <p id="dataSource" class="text-xs mt-1 text-gray-400"></p>
-</div>
+          <!-- Last Updated Section -->
+          <div class="mt-6 text-right text-sm text-gray-500">
+            <p>Last updated: <span id="lastUpdated">Loading...</span></p>
+            <p id="dataSource" class="text-xs mt-1 text-gray-400"></p>
+          </div>
+        </div>
 
         <!-- No Data State - shown if no data available -->
         <div
@@ -400,21 +409,22 @@
         loadTabData(currentTabId);
 
         // Retry button event listener
-        document
-          .getElementById("retryButton")
-          .addEventListener("click", function () {
+        const retryButton = document.getElementById("retryButton");
+        if (retryButton) {
+          retryButton.addEventListener("click", function () {
             document.getElementById("noDataState").classList.add("hidden");
             document.getElementById("loadingState").classList.remove("hidden");
             loadTabData(currentTabId);
           });
+        }
 
-        // Sign out link event listener
-        document
-          .getElementById("signOutLink")
-          .addEventListener("click", function (e) {
-            e.preventDefault();
-            signOut();
+        // Logout button event listener
+        const logoutButton = document.getElementById("logoutButton");
+        if (logoutButton) {
+          logoutButton.addEventListener("click", function () {
+            logout(); // Make sure this function is defined in auth.js
           });
+        }
       });
 
       // Handle alert messages
@@ -479,8 +489,12 @@
               ? "Data from server"
               : "Data from offline storage";
 
-            // Process the data
-            processTabData(data);
+            // Update last updated timestamp
+            document.getElementById("lastUpdated").textContent =
+              new Date().toLocaleString();
+
+            // Process the data specific to the current tab
+            processTabData(tabId, data);
           } else {
             showNoDataState();
           }
@@ -491,21 +505,18 @@
         }
       }
 
-      // Show the no data state
-      function showNoDataState() {
-        document.getElementById("loadingState").classList.add("hidden");
-        document.getElementById("dashboardContent").classList.add("hidden");
-        document.getElementById("noDataState").classList.remove("hidden");
-      }
-
       // Process tab data
-      function processTabData(data) {
+      function processTabData(tabId, data) {
         const tableBody = document.getElementById("campaignTableBody");
-        const metrics = {};
+
+        // Reset metrics display
         let engagementRate = 0;
         let followerGrowth = 0;
         let totalReach = 0;
         let impressions = 0;
+
+        // Object to collect metrics for the chart
+        const metrics = {};
 
         // Clear existing table data
         tableBody.innerHTML = "";
@@ -513,40 +524,70 @@
         // Process each row of the data
         if (Array.isArray(data) && data.length > 0) {
           data.forEach((row, index) => {
-            if (row.length >= 2) {
-              // Extract and normalize the item name
-              const item = row[0].trim().toLowerCase();
-              // Convert to number if possible, otherwise trim the string
-              const value = parseFloat(row[1]) || row[1].trim();
+            // Skip header row if present
+            if (index === 0 && row[0].toLowerCase().includes("metric")) {
+              return;
+            }
 
-              // Insert rows into the table
+            if (row.length >= 2) {
+              // Extract and normalize the metric name
+              const metricName = row[0].trim().toLowerCase();
+
+              // Convert to number if possible, otherwise use as string
+              let metricValue;
+              if (!isNaN(parseFloat(row[1]))) {
+                metricValue = parseFloat(row[1]);
+              } else {
+                metricValue = row[1].trim();
+              }
+
+              // Insert row into the table
               const newRow = tableBody.insertRow();
-              const cellItem = newRow.insertCell(0);
+              const cellMetric = newRow.insertCell(0);
               const cellValue = newRow.insertCell(1);
 
               // Add classes for styling
-              cellItem.className = "py-2 px-4 border-b";
+              cellMetric.className = "py-2 px-4 border-b";
               cellValue.className = "py-2 px-4 border-b font-medium";
 
-              cellItem.textContent =
-                item.charAt(0).toUpperCase() + item.slice(1); // Capitalize
-              cellValue.textContent =
-                typeof value === "number" ? value.toLocaleString() : value;
+              // Capitalize the metric name for display
+              cellMetric.textContent =
+                metricName.charAt(0).toUpperCase() + metricName.slice(1);
 
-              // Collect metrics for the chart and separate values for count-up
-              if (item === "engagement rate") {
-                engagementRate = parseFloat(value) || 0;
-              } else if (item === "follower growth") {
-                followerGrowth = parseFloat(value) || 0;
-              } else if (item === "total reached" || item === "reach") {
-                totalReach = parseFloat(value) || 0;
-              } else if (item === "impressions") {
-                impressions = parseFloat(value) || 0;
+              // Format the value for display
+              cellValue.textContent =
+                typeof metricValue === "number"
+                  ? metricValue.toLocaleString()
+                  : metricValue;
+
+              // Store numeric values for the chart
+              if (typeof metricValue === "number") {
+                metrics[metricName] = metricValue;
               }
 
-              // Store for chart
-              if (!isNaN(parseFloat(value))) {
-                metrics[item] = parseFloat(value);
+              // Collect key metrics for the stat cards
+              switch (metricName) {
+                case "engagement rate":
+                case "engagement":
+                  engagementRate =
+                    typeof metricValue === "number" ? metricValue : 0;
+                  break;
+                case "follower growth":
+                case "new followers":
+                  followerGrowth =
+                    typeof metricValue === "number" ? metricValue : 0;
+                  break;
+                case "reach":
+                case "total reach":
+                case "total reached":
+                  totalReach =
+                    typeof metricValue === "number" ? metricValue : 0;
+                  break;
+                case "impressions":
+                case "views":
+                  impressions =
+                    typeof metricValue === "number" ? metricValue : 0;
+                  break;
               }
             }
           });
@@ -562,12 +603,8 @@
           document.getElementById("impressions").textContent =
             impressions.toLocaleString();
 
-          // Set last updated timestamp
-          document.getElementById("lastUpdated").textContent =
-            new Date().toLocaleString();
-
-          // Draw chart
-          drawChart(metrics);
+          // Draw chart with the collected metrics
+          drawChart(tabId, metrics);
 
           // Hide loading, show dashboard
           document.getElementById("loadingState").classList.add("hidden");
@@ -577,13 +614,13 @@
         } else {
           showNoDataState();
           showAlert(
-            `No data available for ${currentTabId} or invalid data format received.`
+            `No data available for ${tabId} or invalid data format received.`
           );
         }
       }
 
       // Function to draw a chart using Chart.js
-      function drawChart(metrics) {
+      function drawChart(tabId, metrics) {
         const ctx = document.getElementById("metricsChart").getContext("2d");
 
         // Destroy existing chart if it exists
@@ -593,41 +630,32 @@
 
         // Only draw chart if we have data
         if (Object.keys(metrics).length > 0) {
-          // Filter out very large values that would skew the chart
-          const chartMetrics = { ...metrics };
-          const values = Object.values(chartMetrics);
-          const max = Math.max(...values);
-          const min = Math.min(...values);
+          // Get colors based on tab
+          const colors = getTabColors(tabId);
 
-          // If we have a huge range, consider using a logarithmic scale
-          const useLogScale = max / min > 1000;
+          // Prepare data for chart
+          const labels = Object.keys(metrics).map(
+            (key) => key.charAt(0).toUpperCase() + key.slice(1) // Capitalize labels
+          );
 
+          const values = Object.values(metrics);
+
+          // Determine scale type (linear vs logarithmic)
+          const useLogScale = shouldUseLogScale(values);
+
+          // Create the chart
           window.campaignChart = new Chart(ctx, {
             type: "bar",
             data: {
-              labels: Object.keys(chartMetrics).map(
-                (key) => key.charAt(0).toUpperCase() + key.slice(1) // Capitalize labels
-              ),
+              labels: labels,
               datasets: [
                 {
                   label: `${
-                    currentTabId.charAt(0).toUpperCase() + currentTabId.slice(1)
+                    tabId.charAt(0).toUpperCase() + tabId.slice(1)
                   } Metrics`,
-                  data: Object.values(chartMetrics),
-                  backgroundColor: [
-                    "rgba(54, 162, 235, 0.6)",
-                    "rgba(255, 99, 132, 0.6)",
-                    "rgba(75, 192, 192, 0.6)",
-                    "rgba(255, 206, 86, 0.6)",
-                    "rgba(153, 102, 255, 0.6)",
-                  ],
-                  borderColor: [
-                    "rgba(54, 162, 235, 1)",
-                    "rgba(255, 99, 132, 1)",
-                    "rgba(75, 192, 192, 1)",
-                    "rgba(255, 206, 86, 1)",
-                    "rgba(153, 102, 255, 1)",
-                  ],
+                  data: values,
+                  backgroundColor: colors.backgroundColor,
+                  borderColor: colors.borderColor,
                   borderWidth: 1,
                 },
               ],
@@ -641,12 +669,7 @@
                   type: useLogScale ? "logarithmic" : "linear",
                   ticks: {
                     callback: function (value) {
-                      if (value >= 1000000) {
-                        return (value / 1000000).toFixed(1) + "M";
-                      } else if (value >= 1000) {
-                        return (value / 1000).toFixed(1) + "K";
-                      }
-                      return value;
+                      return formatLargeNumber(value);
                     },
                   },
                 },
@@ -660,12 +683,7 @@
                   callbacks: {
                     label: function (context) {
                       let value = context.raw;
-                      if (value >= 1000000) {
-                        return (value / 1000000).toFixed(2) + " Million";
-                      } else if (value >= 1000) {
-                        return (value / 1000).toFixed(1) + " Thousand";
-                      }
-                      return value;
+                      return formatLargeNumber(value, true);
                     },
                   },
                 },
@@ -675,325 +693,97 @@
         }
       }
 
-      // Enhanced tab handling and data processing for dashboard.html
+      // Helper function to determine if log scale should be used
+      function shouldUseLogScale(values) {
+        const validValues = values.filter((val) => val > 0);
+        if (validValues.length < 2) return false;
 
-// Function to load tab data
-async function loadTabData(tabId) {
-  // Update current tab ID
-  currentTabId = tabId;
+        const max = Math.max(...validValues);
+        const min = Math.min(...validValues);
 
-  // Update tab title
-  const tabTitle = document.getElementById("tabDataTitle");
-  const tabConfig = AVAILABLE_TABS.find((tab) => tab.id === tabId);
-  tabTitle.textContent = tabConfig ? `${tabConfig.name} Data` : "Campaign Data";
-
-  // Show loading state
-  document.getElementById("loadingState").classList.remove("hidden");
-  document.getElementById("dashboardContent").classList.add("hidden");
-  document.getElementById("noDataState").classList.add("hidden");
-
-  try {
-    // Use the tab data function that supports offline mode
-    const data = await fetchTabDataWithOfflineSupport(tabId);
-
-    if (data && data.length > 0) {
-      // Set data source indicator
-      document.getElementById("dataSource").textContent = navigator.onLine
-        ? "Data from server"
-        : "Data from offline storage";
-
-      // Update last updated timestamp
-      document.getElementById("lastUpdated").textContent = new Date().toLocaleString();
-
-      // Process the data specific to the current tab
-      processTabData(tabId, data);
-    } else {
-      showNoDataState();
-    }
-  } catch (error) {
-    console.error(`Error loading data for tab ${tabId}:`, error);
-    showAlert(`Error loading data for ${tabId}: ${error.message}`);
-    showNoDataState();
-  }
-}
-
-// Process tab data
-function processTabData(tabId, data) {
-  const tableBody = document.getElementById("campaignTableBody");
-
-  // Reset metrics display
-  let engagementRate = 0;
-  let followerGrowth = 0;
-  let totalReach = 0;
-  let impressions = 0;
-  
-  // Object to collect metrics for the chart
-  const metrics = {};
-
-  // Clear existing table data
-  tableBody.innerHTML = "";
-
-  // Process each row of the data
-  if (Array.isArray(data) && data.length > 0) {
-    data.forEach((row, index) => {
-      // Skip header row if present
-      if (index === 0 && row[0].toLowerCase().includes('metric')) {
-        return;
+        // Use log scale if range is large
+        return max / min > 1000;
       }
 
-      if (row.length >= 2) {
-        // Extract and normalize the metric name
-        const metricName = row[0].trim().toLowerCase();
-        
-        // Convert to number if possible, otherwise use as string
-        let metricValue;
-        if (!isNaN(parseFloat(row[1]))) {
-          metricValue = parseFloat(row[1]);
+      // Helper function to format large numbers
+      function formatLargeNumber(value, verbose = false) {
+        if (value >= 1000000) {
+          return verbose
+            ? (value / 1000000).toFixed(2) + " Million"
+            : (value / 1000000).toFixed(1) + "M";
+        } else if (value >= 1000) {
+          return verbose
+            ? (value / 1000).toFixed(1) + " Thousand"
+            : (value / 1000).toFixed(1) + "K";
+        }
+        return value;
+      }
+
+      // Get colors based on tab ID
+      function getTabColors(tabId) {
+        switch (tabId.toLowerCase()) {
+          case "facebook":
+            return {
+              backgroundColor: ["rgba(59, 89, 152, 0.6)"],
+              borderColor: ["rgba(59, 89, 152, 1)"],
+            };
+          case "instagram":
+            return {
+              backgroundColor: ["rgba(193, 53, 132, 0.6)"],
+              borderColor: ["rgba(193, 53, 132, 1)"],
+            };
+          case "twitter":
+            return {
+              backgroundColor: ["rgba(29, 161, 242, 0.6)"],
+              borderColor: ["rgba(29, 161, 242, 1)"],
+            };
+          case "linkedin":
+            return {
+              backgroundColor: ["rgba(0, 119, 181, 0.6)"],
+              borderColor: ["rgba(0, 119, 181, 1)"],
+            };
+          default:
+            return {
+              backgroundColor: [
+                "rgba(54, 162, 235, 0.6)",
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(75, 192, 192, 0.6)",
+                "rgba(255, 206, 86, 0.6)",
+                "rgba(153, 102, 255, 0.6)",
+              ],
+              borderColor: [
+                "rgba(54, 162, 235, 1)",
+                "rgba(255, 99, 132, 1)",
+                "rgba(75, 192, 192, 1)",
+                "rgba(255, 206, 86, 1)",
+                "rgba(153, 102, 255, 1)",
+              ],
+            };
+        }
+      }
+
+      // Show the no data state
+      function showNoDataState() {
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("dashboardContent").classList.add("hidden");
+        document.getElementById("noDataState").classList.remove("hidden");
+      }
+
+      // Function to handle logout
+      function logout() {
+        // Perform logout functionality (should be defined in auth.js)
+        console.log("Logging out...");
+        // Assuming there's a signOut function in auth.js
+        if (typeof signOut === "function") {
+          signOut();
         } else {
-          metricValue = row[1].trim();
-        }
-
-        // Insert row into the table
-        const newRow = tableBody.insertRow();
-        const cellMetric = newRow.insertCell(0);
-        const cellValue = newRow.insertCell(1);
-
-        // Add classes for styling
-        cellMetric.className = "py-2 px-4 border-b";
-        cellValue.className = "py-2 px-4 border-b font-medium";
-
-        // Capitalize the metric name for display
-        cellMetric.textContent = metricName.charAt(0).toUpperCase() + metricName.slice(1);
-        
-        // Format the value for display
-        cellValue.textContent = typeof metricValue === "number" 
-          ? metricValue.toLocaleString() 
-          : metricValue;
-
-        // Store numeric values for the chart
-        if (typeof metricValue === "number") {
-          metrics[metricName] = metricValue;
-        }
-
-        // Collect key metrics for the stat cards
-        switch (metricName) {
-          case "engagement rate":
-          case "engagement":
-            engagementRate = typeof metricValue === "number" ? metricValue : 0;
-            break;
-          case "follower growth":
-          case "new followers":
-            followerGrowth = typeof metricValue === "number" ? metricValue : 0;
-            break;
-          case "reach":
-          case "total reach":
-          case "total reached":
-            totalReach = typeof metricValue === "number" ? metricValue : 0;
-            break;
-          case "impressions":
-          case "views":
-            impressions = typeof metricValue === "number" ? metricValue : 0;
-            break;
+          console.error("signOut function not found");
+          // Fallback logout functionality
+          localStorage.removeItem("user");
+          sessionStorage.clear();
+          window.location.href = "index.html";
         }
       }
-    });
-
-    // Update metrics display
-    document.getElementById("engagementRate").textContent = `${engagementRate}%`;
-    document.getElementById("followerGrowth").textContent = followerGrowth.toLocaleString();
-    document.getElementById("totalReach").textContent = totalReach.toLocaleString();
-    document.getElementById("impressions").textContent = impressions.toLocaleString();
-
-    // Draw chart with the collected metrics
-    drawChart(tabId, metrics);
-
-    // Hide loading, show dashboard
-    document.getElementById("loadingState").classList.add("hidden");
-    document.getElementById("dashboardContent").classList.remove("hidden");
-  } else {
-    showNoDataState();
-    showAlert(`No data available for ${tabId} or invalid data format received.`);
-  }
-}
-
-// Function to draw a chart using Chart.js
-function drawChart(tabId, metrics) {
-  const ctx = document.getElementById("metricsChart").getContext("2d");
-
-  // Destroy existing chart if it exists
-  if (window.campaignChart) {
-    window.campaignChart.destroy();
-  }
-
-  // Only draw chart if we have data
-  if (Object.keys(metrics).length > 0) {
-    // Get colors based on tab
-    const colors = getTabColors(tabId);
-    
-    // Prepare data for chart
-    const labels = Object.keys(metrics).map(
-      (key) => key.charAt(0).toUpperCase() + key.slice(1) // Capitalize labels
-    );
-    
-    const values = Object.values(metrics);
-    
-    // Determine scale type (linear vs logarithmic)
-    const useLogScale = shouldUseLogScale(values);
-
-    // Create the chart
-    window.campaignChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: `${tabId.charAt(0).toUpperCase() + tabId.slice(1)} Metrics`,
-            data: values,
-            backgroundColor: colors.backgroundColor,
-            borderColor: colors.borderColor,
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            type: useLogScale ? "logarithmic" : "linear",
-            ticks: {
-              callback: function (value) {
-                return formatLargeNumber(value);
-              },
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: "top",
-          },
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                let value = context.raw;
-                return formatLargeNumber(value, true);
-              },
-            },
-          },
-        },
-      },
-    });
-  }
-}
-
-// Helper function to determine if log scale should be used
-function shouldUseLogScale(values) {
-  const validValues = values.filter(val => val > 0);
-  if (validValues.length < 2) return false;
-  
-  const max = Math.max(...validValues);
-  const min = Math.min(...validValues);
-  
-  // Use log scale if range is large
-  return max / min > 1000;
-}
-
-// Helper function to format large numbers
-function formatLargeNumber(value, verbose = false) {
-  if (value >= 1000000) {
-    return verbose 
-      ? (value / 1000000).toFixed(2) + " Million" 
-      : (value / 1000000).toFixed(1) + "M";
-  } else if (value >= 1000) {
-    return verbose 
-      ? (value / 1000).toFixed(1) + " Thousand" 
-      : (value / 1000).toFixed(1) + "K";
-  }
-  return value;
-}
-
-// Get colors based on tab ID
-function getTabColors(tabId) {
-  switch (tabId) {
-    case 'Facebook':
-      return {
-        backgroundColor: ['rgba(59, 89, 152, 0.6)'],
-        borderColor: ['rgba(59, 89, 152, 1)']
-      };
-    case 'Instagram':
-      return {
-        backgroundColor: ['rgba(193, 53, 132, 0.6)'],
-        borderColor: ['rgba(193, 53, 132, 1)']
-      };
-    case 'Twitter':
-      return {
-        backgroundColor: ['rgba(29, 161, 242, 0.6)'],
-        borderColor: ['rgba(29, 161, 242, 1)']
-      };
-    case 'Linkedin':
-      return {
-        backgroundColor: ['rgba(0, 119, 181, 0.6)'],
-        borderColor: ['rgba(0, 119, 181, 1)']
-      };
-    default:
-      return {
-        backgroundColor: [
-          'rgba(54, 162, 235, 0.6)',
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(255, 206, 86, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-        ],
-        borderColor: [
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 99, 132, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(153, 102, 255, 1)',
-        ]
-      };
-  }
-}
-
-// Set up tab navigation
-function setupTabNavigation() {
-  const tabButtons = document.querySelectorAll(".tab-button");
-
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      // Remove active class from all buttons
-      tabButtons.forEach((btn) => btn.classList.remove("active"));
-
-      // Add active class to clicked button
-      this.classList.add("active");
-
-      // Get tab ID from data attribute
-      const tabId = this.getAttribute("data-tab-id");
-
-      // Load the selected tab data
-      loadTabData(tabId);
-    });
-  });
-}
-
-// Show the no data state
-function showNoDataState() {
-  document.getElementById("loadingState").classList.add("hidden");
-  document.getElementById("dashboardContent").classList.add("hidden");
-  document.getElementById("noDataState").classList.remove("hidden");
-}
-    </script>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-  const logoutBtn = document.getElementById('logoutButton');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', logout); // Call your existing logout() function
-  }
-});
-
     </script>
   </body>
 </html>

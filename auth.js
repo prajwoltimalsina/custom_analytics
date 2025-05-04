@@ -302,94 +302,83 @@ function logout() {
   }
 }
 
-// Display alert message
-
 // Function to show alert
 function showAlert(message) {
   const alertBox = document.getElementById("alertBox");
-  const alertMessage = document.getElementById("alertMessage");
-  alertMessage.textContent = message;
-  alertBox.style.display = "block";
-  setTimeout(() => (alertBox.style.display = "none"), 3000);
-}
-
-// Signup logic
-document.getElementById("signupForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const fName = document.getElementById("fName").value.trim();
-  const lName = document.getElementById("lName").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
-  const password = document.getElementById("signupPassword").value;
-
-  const users = JSON.parse(localStorage.getItem("users")) || {};
-
-  if (users[email]) {
-    showAlert("This email is already registered!");
-  } else {
-    users[email] = { fName, lName, password };
-    localStorage.setItem("users", JSON.stringify(users));
-    showAlert("Registration successful!");
-    // Switch to sign in form
-    document.getElementById("signIn").style.display = "block";
-    document.getElementById("signup").style.display = "none";
-  }
-});
-
-// Signin logic
-document.getElementById("signinForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const email = document.getElementById("signinEmail").value.trim();
-  const password = document.getElementById("signinPassword").value;
-
-  const users = JSON.parse(localStorage.getItem("users")) || {};
-
-  if (!users[email]) {
-    showAlert("Email not found!");
-  } else if (users[email].password !== password) {
-    showAlert("Incorrect password!");
-  } else {
-    showAlert("Login successful!");
-
-    // Store user info
-    currentUser = {
-      email: email,
-      firstName: users[email].fName,
-      lastName: users[email].lName,
-    };
-    localStorage.setItem("user", JSON.stringify(currentUser));
-
-    // Redirect to dashboard
-    window.location.href = 'dashboard.html';
-  }
-});
-
-
-
-  
-  
-function logout() {
-  // Remove local user data
-  localStorage.removeItem('user');
-
-  // Sign out from Google if available
-  if (typeof gapi !== 'undefined' && gapi.auth2) {
-    const auth2 = gapi.auth2.getAuthInstance();
-    if (auth2) {
-      auth2.signOut().then(function () {
-        console.log('Google user signed out.');
-        window.location.href = 'index.html';
-      });
-      return;
+  if (alertBox) {
+    const alertMessage = document.getElementById("alertMessage");
+    if (alertMessage) {
+      alertMessage.textContent = message;
+      alertBox.style.display = "block";
+      setTimeout(() => (alertBox.style.display = "none"), 3000);
+    } else {
+      console.log("Alert message:", message);
     }
+  } else {
+    console.log("Alert message:", message);
   }
-
-  // Fallback redirect
-  window.location.href = 'index.html';
 }
 
+// Add event listeners only if the elements exist
+document.addEventListener("DOMContentLoaded", function() {
+  // Signup form event listener
+  const signupForm = document.getElementById("signupForm");
+  if (signupForm) {
+    signupForm.addEventListener("submit", function (e) {
+      e.preventDefault();
 
+      const fName = document.getElementById("fName").value.trim();
+      const lName = document.getElementById("lName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+
+      const users = JSON.parse(localStorage.getItem("users")) || {};
+
+      if (users[email]) {
+        showAlert("This email is already registered!");
+      } else {
+        users[email] = { fName, lName, password };
+        localStorage.setItem("users", JSON.stringify(users));
+        showAlert("Registration successful!");
+        // Switch to sign in form
+        document.getElementById("signIn").style.display = "block";
+        document.getElementById("signup").style.display = "none";
+      }
+    });
+  }
+
+  // Signin form event listener
+  const signinForm = document.getElementById("signinForm");
+  if (signinForm) {
+    signinForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("signinEmail").value.trim();
+      const password = document.getElementById("signinPassword").value;
+
+      const users = JSON.parse(localStorage.getItem("users")) || {};
+
+      if (!users[email]) {
+        showAlert("Email not found!");
+      } else if (users[email].password !== password) {
+        showAlert("Incorrect password!");
+      } else {
+        showAlert("Login successful!");
+
+        // Store user info
+        currentUser = {
+          email: email,
+          firstName: users[email].fName,
+          lastName: users[email].lName,
+        };
+        localStorage.setItem("user", JSON.stringify(currentUser));
+
+        // Redirect to dashboard
+        window.location.href = 'dashboard.html';
+      }
+    });
+  }
+});
 
 // Google API loader callback
 function gapiLoaded() {
